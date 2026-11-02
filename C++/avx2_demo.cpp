@@ -173,9 +173,16 @@ static void demo_cpp_syntax() {
 // ============================================================================
 
 // (A) 純量版本 (禁止自動向量化)
+#if defined(__GNUC__) && !defined(__clang__)
 __attribute__((noinline, optimize("no-tree-vectorize")))
+#else
+__attribute__((noinline))
+#endif
 static void scalar_compute(const int* a, const int* b, int* c, size_t n, int iters) {
     for (int iter = 0; iter < iters; ++iter) {
+#if defined(__clang__)
+        #pragma clang loop vectorize(disable)
+#endif
         for (size_t i = 0; i < n; ++i) {
             c[i] = a[i] * a[i] + b[i] * 3 + a[i] * b[i];
         }

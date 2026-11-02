@@ -151,9 +151,16 @@ static void demo_float_fma(void) {
 // ============================================================================
 
 // 避免編譯器自動向量化傳統迴圈，以精確測量「純量運算」vs「手動 AVX2」的真實差距
+#if defined(__GNUC__) && !defined(__clang__)
 __attribute__((noinline, optimize("no-tree-vectorize")))
+#else
+__attribute__((noinline))
+#endif
 static void scalar_compute(const int *a, const int *b, int *c, size_t n, int iters) {
     for (int iter = 0; iter < iters; iter++) {
+#if defined(__clang__)
+        #pragma clang loop vectorize(disable)
+#endif
         for (size_t i = 0; i < n; i++) {
             // 多項式混合運算：包含多次乘法與加法
             c[i] = a[i] * a[i] + b[i] * 3 + a[i] * b[i];
